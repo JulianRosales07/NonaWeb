@@ -82,7 +82,7 @@ export function MedicationTable({
                 </div>
               </td>
               <td className="px-4 py-3 text-muted-foreground">
-                {medication.users?.name ?? "—"}
+                {medication.users?.name ?? (medication.patient_id ? "—" : "Sin asignar")}
               </td>
               <td className="px-4 py-3 text-muted-foreground">
                 {medication.dosage || "—"}

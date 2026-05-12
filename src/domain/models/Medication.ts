@@ -1,6 +1,6 @@
 export interface Medication {
   id: number;
-  patient_id: number;
+  patient_id: number | null;
   name: string;
   dosage: string;
   frequency: string;
@@ -18,7 +18,7 @@ export interface Medication {
 }
 
 export interface CreateMedicationDTO {
-  patient_id: number;
+  patient_id?: number | null;
   name: string;
   dosage: string;
   frequency: string;

@@ -55,7 +55,7 @@ export function MedicationFormModal({
   useEffect(() => {
     if (open) {
       if (medication) {
-        setPatientId(String(medication.patient_id))
+        setPatientId(medication.patient_id ? String(medication.patient_id) : "")
         setName(medication.name)
         setDosage(medication.dosage || "")
         setFrequency(medication.frequency || "")
@@ -82,7 +82,6 @@ export function MedicationFormModal({
     const errs: FormErrors = {}
     if (!name.trim()) errs.name = "El nombre es obligatorio"
     if (!frequency.trim()) errs.frequency = "La frecuencia es obligatoria"
-    if (!isEditMode && !patientId) errs.patient_id = "Debe seleccionar un paciente"
     return errs
   }
 
@@ -112,7 +111,7 @@ export function MedicationFormModal({
         await onSubmit(data, imageFile || undefined)
       } else {
         const data: CreateMedicationDTO = {
-          patient_id: Number(patientId),
+          patient_id: patientId ? Number(patientId) : null,
           name: name.trim(),
           dosage: dosage.trim(),
           frequency: frequency.trim(),
@@ -186,7 +185,7 @@ export function MedicationFormModal({
               htmlFor="patient_id"
               className="block text-sm font-medium mb-1"
             >
-              Paciente {!isEditMode && <span className="text-red-500">*</span>}
+              Paciente
             </label>
             <select
               id="patient_id"
