@@ -68,11 +68,11 @@ export function DashboardLayout() {
         <header className="h-16 bg-white/60 backdrop-blur-md border-b border-slate-200/60 flex items-center justify-end px-8 z-10 sticky top-0">
           <div className="flex items-center gap-4">
             <div className="flex flex-col items-end">
-              <span className="text-sm font-semibold">Admin. Julia</span>
-              <span className="text-xs text-slate-500">Super Administrador</span>
+              <span className="text-sm font-semibold">{JSON.parse(localStorage.getItem('user') || '{}').name || 'Admin'}</span>
+              <span className="text-xs text-slate-500 capitalize">{JSON.parse(localStorage.getItem('user') || '{}').role || 'Administrador'}</span>
             </div>
             <div className="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden">
-              <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Julia" alt="Avatar" />
+              <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${JSON.parse(localStorage.getItem('user') || '{}').name || 'Admin'}`} alt="Avatar" />
             </div>
           </div>
         </header>
