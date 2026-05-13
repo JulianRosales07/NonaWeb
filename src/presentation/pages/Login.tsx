@@ -180,7 +180,6 @@ export function Login() {
               )}
             </button>
           </form>
-
           <p className="text-center text-[11px] text-slate-400 font-medium tracking-wide">
             Acceso exclusivo para administradores autorizados de Nona App.
           </p>

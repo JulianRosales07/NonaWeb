@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Pill, Plus, Search, Download, FileUp, Loader2, Eye, Edit2 } from 'lucide-react';
-
+import { Pill, Plus, Search, Download, FileUp, Loader2, Eye, Edit2, Trash2 } from 'lucide-react';
 import { MedicationService, type MedicineDTO } from '../../application/services/MedicationService.ts';
 import { MedicineFormModal } from '../components/ui/MedicineFormModal.tsx';
-
 
 export function Medications() {
   const [medicines, setMedicines] = useState<MedicineDTO[]>([]);
@@ -18,12 +16,12 @@ export function Medications() {
   const [currentMedicine, setCurrentMedicine] = useState<MedicineDTO | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(false);
 
-  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchMeds = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await MedicationService.getAllMedicines();
       setMedicines(data);
     } catch (err: any) {
@@ -72,7 +70,6 @@ export function Medications() {
     setShowModal(true);
   };
 
-
   const handleDownloadTemplate = async () => {
     try {
       await MedicationService.downloadTemplate();
@@ -116,10 +113,9 @@ export function Medications() {
     m.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-
   return (
     <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500 pb-12">
-      {/* Encabezado */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
@@ -150,7 +146,6 @@ export function Medications() {
             onClick={handleNew}
             className="h-10 inline-flex items-center justify-center rounded-lg text-xs font-bold transition-all bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 shadow-lg shadow-blue-500/25"
           >
-
             <Plus className="w-4 h-4 mr-2" />
             Nuevo
           </button>
@@ -165,7 +160,7 @@ export function Medications() {
           placeholder="Buscar medicamento..." 
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
-          className="pl-9 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" 
+          className="pl-9 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm" 
         />
       </div>
 
@@ -229,12 +224,10 @@ export function Medications() {
                             className="p-2 text-slate-400 hover:text-red-600 transition-colors hover:bg-red-50 rounded-lg"
                             title="Eliminar"
                           >
-                            <span className="text-xs font-bold uppercase tracking-tighter">Eliminar</span>
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
-
-
                     </tr>
                   ))}
                   {filteredMedicines.length === 0 && (
@@ -262,9 +255,6 @@ export function Medications() {
         onSave={handleSave}
         onClose={() => setShowModal(false)}
       />
-
-
     </div>
   );
 }
-
