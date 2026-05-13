@@ -6,7 +6,6 @@ import { DashboardLayout } from './presentation/layouts/DashboardLayout'
 import { Dashboard } from './presentation/pages/Dashboard'
 import { Users } from './presentation/pages/Users'
 import { Medications } from './presentation/pages/Medications'
-import { Stats } from './presentation/pages/Stats'
 import { Settings } from './presentation/pages/Settings'
 import './index.css'
 
@@ -19,7 +18,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/users" element={<Users />} />
           <Route path="/medications" element={<Medications />} />
-          <Route path="/stats" element={<Stats />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Dashboard />} />
         </Route>
@@ -27,3 +25,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </BrowserRouter>
   </React.StrictMode>,
 )
+

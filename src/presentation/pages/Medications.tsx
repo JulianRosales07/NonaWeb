@@ -1,25 +1,121 @@
-import { useState, useEffect } from 'react';
-import { Pill, Plus, Search, AlertCircle, RefreshCcw } from 'lucide-react';
-import { MedicationService, type MedicineDTO } from '../../application/services/MedicationService';
+import { useState, useEffect, useRef } from 'react';
+import { Pill, Plus, Search, Download, FileUp, Loader2, Eye, Edit2 } from 'lucide-react';
+
+import { MedicationService, type MedicineDTO } from '../../application/services/MedicationService.ts';
+import { MedicineFormModal } from '../components/ui/MedicineFormModal.tsx';
+
 
 export function Medications() {
   const [medicines, setMedicines] = useState<MedicineDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [currentMedicine, setCurrentMedicine] = useState<MedicineDTO | null>(null);
+  const [isReadOnly, setIsReadOnly] = useState(false);
+
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchMeds = async () => {
+    try {
+      setLoading(true);
+      const data = await MedicationService.getAllMedicines();
+      setMedicines(data);
+    } catch (err: any) {
+      setError(err.message || 'Error al cargar los medicamentos');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchMeds = async () => {
-      try {
-        const data = await MedicationService.getAllMedicines();
-        setMedicines(data);
-      } catch (err: any) {
-        setError(err.message || 'Error al cargar los medicamentos');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchMeds();
   }, []);
+
+  const handleSave = async (data: { name: string; imageUrl: string }) => {
+    try {
+      setSaving(true);
+      if (currentMedicine?.id) {
+        await MedicationService.updateGlobalMedicine(currentMedicine.id, data.name, data.imageUrl);
+      } else {
+        await MedicationService.createGlobalMedicine(data.name, data.imageUrl);
+      }
+      setShowModal(false);
+      fetchMeds();
+    } catch (err: any) {
+      alert(err.message || 'Error al guardar el medicamento');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEdit = (med: MedicineDTO) => {
+    setCurrentMedicine(med);
+    setIsReadOnly(false);
+    setShowModal(true);
+  };
+
+  const handleDetails = (med: MedicineDTO) => {
+    setCurrentMedicine(med);
+    setIsReadOnly(true);
+    setShowModal(true);
+  };
+
+  const handleNew = () => {
+    setCurrentMedicine(null);
+    setIsReadOnly(false);
+    setShowModal(true);
+  };
+
+
+  const handleDownloadTemplate = async () => {
+    try {
+      await MedicationService.downloadTemplate();
+    } catch (err: any) {
+      alert('Error al descargar la plantilla');
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setImporting(true);
+      const result = await MedicationService.importMedicines(file);
+      alert(result.message);
+      fetchMeds();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Error al importar medicamentos');
+    } finally {
+      setImporting(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('¿Estás seguro de que deseas eliminar este medicamento del catálogo?')) return;
+    try {
+      await MedicationService.deleteMedicine(id);
+      fetchMeds();
+    } catch (err: any) {
+      alert('Error al eliminar el medicamento');
+    }
+  };
+
+  const filteredMedicines = medicines.filter(m => 
+    m.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
 
   return (
     <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500 pb-12">
@@ -27,106 +123,127 @@ export function Medications() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            Control de Medicamentos <Pill className="text-primary w-6 h-6" />
+            Base de Medicamentos <Pill className="text-primary w-6 h-6" />
           </h1>
-          <p className="text-slate-500 mt-1">Supervisa el inventario global de medicinas de todos los pacientes.</p>
+          <p className="text-slate-500 mt-1">Gestiona el catálogo global de medicamentos del sistema.</p>
         </div>
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <div className="relative w-full sm:w-64 flex items-center">
-            <Search className="absolute left-3 h-4 w-4 text-slate-400" />
-            <input 
-              type="text" 
-              placeholder="Buscar medicamento..." 
-              className="pl-9 h-11 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" 
-            />
-          </div>
-          <button className="h-11 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 shadow-md">
-            <Plus className="w-5 h-5 mr-2" />
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+          <button 
+            onClick={handleDownloadTemplate}
+            className="h-10 inline-flex items-center justify-center rounded-lg text-xs font-bold transition-all bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 px-4 py-2 shadow-sm"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Plantilla
+          </button>
+          
+          <button 
+            onClick={handleImportClick}
+            disabled={importing}
+            className="h-10 inline-flex items-center justify-center rounded-lg text-xs font-bold transition-all bg-slate-800 text-white hover:bg-slate-900 px-4 py-2 shadow-lg disabled:opacity-50"
+          >
+            {importing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileUp className="w-4 h-4 mr-2" />}
+            Importar Excel
+          </button>
+          <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".xlsx,.xls" className="hidden" />
+
+          <button 
+            onClick={handleNew}
+            className="h-10 inline-flex items-center justify-center rounded-lg text-xs font-bold transition-all bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 shadow-lg shadow-blue-500/25"
+          >
+
+            <Plus className="w-4 h-4 mr-2" />
             Nuevo
           </button>
         </div>
       </div>
 
-      {/* Tarjetas KPI */}
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
-        <div className="rounded-xl border-0 bg-gradient-to-br from-red-500 to-red-600 text-white shadow-red-500/20 shadow-xl p-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="font-medium text-red-100">Stock Crítico o Vacío</p>
-              <h3 className="text-4xl font-extrabold mt-2">1</h3>
-            </div>
-            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-              <AlertCircle className="w-6 h-6" />
-            </div>
-          </div>
-        </div>
-        
-        <div className="rounded-xl border-0 bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-amber-500/20 shadow-xl p-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="font-medium text-amber-100">En Peligro de Agotarse</p>
-              <h3 className="text-4xl font-extrabold mt-2">1</h3>
-            </div>
-            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-              <RefreshCcw className="w-6 h-6" />
-            </div>
-          </div>
-        </div>
+      {/* Buscador */}
+      <div className="relative w-full max-w-md flex items-center">
+        <Search className="absolute left-3 h-4 w-4 text-slate-400" />
+        <input 
+          type="text" 
+          placeholder="Buscar medicamento..." 
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          className="pl-9 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" 
+        />
       </div>
 
       {/* Tabla */}
-      <div className="rounded-xl border border-slate-200 bg-white text-slate-950 shadow-sm">
+      <div className="rounded-2xl border border-slate-200 bg-white text-slate-950 shadow-sm overflow-hidden">
         <div className="flex flex-col space-y-1.5 p-6 pb-4">
-          <h3 className="text-xl font-semibold leading-none tracking-tight">Inventario Actual</h3>
-          <p className="text-sm text-slate-500">Visualiza los medicamentos gestionados en todo Nona.</p>
+          <h3 className="text-xl font-bold leading-none tracking-tight text-slate-900">Catálogo de Medicamentos</h3>
+          <p className="text-sm text-slate-500 font-medium">Lista oficial de medicinas disponibles en Nona.</p>
         </div>
-        <div className="p-6 pt-0">
+        <div className="px-6 pb-6">
           {loading ? (
-             <div className="flex justify-center p-8 text-slate-500">Cargando medicamentos...</div>
+             <div className="flex flex-col items-center justify-center p-12 text-slate-500 gap-3">
+               <Loader2 className="w-8 h-8 animate-spin text-primary" />
+               <span className="font-medium">Cargando catálogo...</span>
+             </div>
           ) : error ? (
-             <div className="p-4 text-red-500 bg-red-50 rounded-lg">{error}</div>
+             <div className="p-4 text-red-600 bg-red-50 rounded-xl border border-red-100 font-medium">{error}</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
                 <thead className="text-xs text-slate-500 uppercase bg-slate-50/50">
                   <tr>
-                    <th className="px-4 py-4 font-medium rounded-tl-lg">Medicamento</th>
-                    <th className="px-4 py-4 font-medium">Paciente Destino</th>
-                    <th className="px-4 py-4 font-medium">Dosis</th>
-                    <th className="px-4 py-4 font-medium">Frecuencia / Hora</th>
-                    <th className="px-4 py-4 font-medium text-right rounded-tr-lg">Creado</th>
+                    <th className="px-4 py-4 font-bold tracking-wider w-24">Imagen</th>
+                    <th className="px-4 py-4 font-bold tracking-wider">Nombre del Medicamento</th>
+                    <th className="px-4 py-4 font-bold tracking-wider text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {medicines.map((med) => (
-                    <tr key={med.id} className="hover:bg-slate-50/80 transition-colors group">
-                      <td className="px-4 py-4 font-medium text-slate-900 border-l border-transparent group-hover:border-primary transition-all flex items-center gap-2">
+                  {filteredMedicines.map((med) => (
+                    <tr key={med.id} className="hover:bg-slate-50/50 transition-colors group">
+                      <td className="px-4 py-4">
                         {med.image_url ? (
-                          <img src={med.image_url} alt={med.name} className="w-8 h-8 rounded-full object-cover" />
+                          <img src={med.image_url} alt={med.name} className="w-12 h-12 rounded-xl object-cover shadow-sm border border-slate-100" />
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
-                            <Pill className="w-4 h-4 text-slate-400" />
+                          <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-100">
+                            <Pill className="w-6 h-6 text-slate-300" />
                           </div>
                         )}
+                      </td>
+                      <td className="px-4 py-4 font-bold text-slate-900 text-base">
                         {med.name}
                       </td>
-                      <td className="px-4 py-4 text-slate-600">
-                         {med.users?.name || 'Desconocido'}
+                      <td className="px-4 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button 
+                            onClick={() => handleDetails(med)}
+                            className="p-2 text-slate-400 hover:text-blue-600 transition-colors hover:bg-blue-50 rounded-lg"
+                            title="Ver detalles"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => handleEdit(med)}
+                            className="p-2 text-slate-400 hover:text-indigo-600 transition-colors hover:bg-indigo-50 rounded-lg"
+                            title="Editar"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(med.id)}
+                            className="p-2 text-slate-400 hover:text-red-600 transition-colors hover:bg-red-50 rounded-lg"
+                            title="Eliminar"
+                          >
+                            <span className="text-xs font-bold uppercase tracking-tighter">Eliminar</span>
+                          </button>
+                        </div>
                       </td>
-                      <td className="px-4 py-4 text-slate-600 font-semibold">{med.dosage}</td>
-                      <td className="px-4 py-4">
-                        <span className="font-medium text-slate-900">{med.frequency}</span> 
-                        <span className="text-xs text-slate-500 block">{med.time}</span>
-                      </td>
-                      <td className="px-4 py-4 text-right text-slate-500">
-                        {new Date(med.created_at).toLocaleDateString()}
-                      </td>
+
+
                     </tr>
                   ))}
-                  {medicines.length === 0 && (
+                  {filteredMedicines.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
-                        No hay medicamentos registrados.
+                      <td colSpan={3} className="px-4 py-12 text-center text-slate-500">
+                        <div className="flex flex-col items-center gap-2">
+                          <Search className="w-8 h-8 text-slate-200" />
+                          <p className="font-medium">No se encontraron medicamentos</p>
+                        </div>
                       </td>
                     </tr>
                   )}
@@ -136,6 +253,18 @@ export function Medications() {
           )}
         </div>
       </div>
+
+      <MedicineFormModal 
+        open={showModal}
+        saving={saving}
+        isReadOnly={isReadOnly}
+        initialData={currentMedicine ? { id: currentMedicine.id, name: currentMedicine.name, imageUrl: currentMedicine.image_url || '' } : undefined}
+        onSave={handleSave}
+        onClose={() => setShowModal(false)}
+      />
+
+
     </div>
   );
 }
+

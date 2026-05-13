@@ -10,9 +10,9 @@ export function DashboardLayout() {
     { name: 'Dashboard', path: '/dashboard', icon: Home },
     { name: 'Usuarios & Relaciones', path: '/users', icon: Users },
     { name: 'Medicamentos & Stock', path: '/medications', icon: Pill },
-    { name: 'Estadisticas', path: '/stats', icon: Activity },
     { name: 'Configuracion', path: '/settings', icon: Settings },
   ];
+
 
   const handleLogout = () => {
     localStorage.removeItem('token');
