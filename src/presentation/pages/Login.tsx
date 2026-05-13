@@ -104,14 +104,7 @@ export function Login() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between mt-2">
-                  <label className="flex items-center space-x-2 text-sm text-slate-600">
-                    <input type="checkbox" className="rounded border-slate-300 text-primary focus:ring-primary h-4 w-4" />
-                    <span>Recordarme</span>
-                  </label>
-                  <a href="#" className="text-sm font-medium text-primary hover:underline">
-                    ¿Olvidaste tu contraseña?
-                  </a>
+                <div className="flex items-center justify-end mt-2">
                 </div>
 
                 <Button type="submit" className="w-full h-11 text-base font-medium mt-6 group" disabled={loading}>

@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Home, Users, Pill, Settings, LogOut, Activity } from 'lucide-react';
+import { Home, Users, Pill, LogOut, Activity, Link2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export function DashboardLayout() {
@@ -7,10 +7,10 @@ export function DashboardLayout() {
 
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: Home },
-    { name: 'Usuarios & Relaciones', path: '/users', icon: Users },
-    { name: 'Medicamentos & Stock', path: '/medications', icon: Pill },
-    { name: 'Estadísticas', path: '/stats', icon: Activity },
-    { name: 'Configuración', path: '/settings', icon: Settings },
+    { name: 'Usuarios', path: '/users', icon: Users },
+    { name: 'Medicamentos', path: '/medications', icon: Pill },
+    { name: 'Relaciones', path: '/relationships', icon: Link2 },
+    { name: 'Adherencia', path: '/stats', icon: Activity },
   ];
 
   const handleLogout = () => {
