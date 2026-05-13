@@ -179,7 +179,11 @@ export function Dashboard() {
 
       // Recent items
       const sortedMeds = [...medicines]
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .sort((a, b) => {
+          const da = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const db = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return db - da;
+        })
         .slice(0, 5);
 
       const sortedUsers = [...users]
@@ -523,7 +527,7 @@ export function Dashboard() {
                     <td className="px-6 py-3.5 text-slate-700 font-semibold">{med.dosage}</td>
                     <td className="px-6 py-3.5 text-slate-600">{med.frequency}</td>
                     <td className="px-6 py-3.5 text-slate-400 text-xs">
-                      {new Date(med.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {med.created_at ? new Date(med.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
                     </td>
                   </tr>
                 ))}

@@ -10,7 +10,6 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  Shield,
   Activity,
   CalendarDays,
   ChevronDown,
@@ -23,14 +22,6 @@ import {
 } from '../../application/services/RelationshipService';
 import { UserService } from '../../application/services/UserService';
 import type { User } from '../../domain/models/User';
-
-const DEFAULT_PERMISSIONS: Permissions = {
-  view_health: true,
-  view_medications: true,
-  view_appointments: true,
-  edit_medications: false,
-  edit_appointments: false,
-};
 
 const STATUS_CONFIG = {
   active: { label: 'Activa', icon: CheckCircle, cls: 'bg-emerald-100 text-emerald-700 ring-emerald-200' },
@@ -166,7 +157,7 @@ export function Relationships() {
   const handleDelete = async (id: number) => {
     setDeleting(true);
     try {
-      await RelationshipService.delete(id);
+      await RelationshipService.deleteRelationship(id);
       setRelationships((prev) => prev.filter((r) => (r.id ?? r.relationship_id) !== id));
       setDeletingId(null);
     } catch (err: any) {
