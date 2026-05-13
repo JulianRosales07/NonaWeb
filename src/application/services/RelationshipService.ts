@@ -29,6 +29,13 @@ export interface LinkByCedulaDTO {
   relationship_type: 'familiar' | 'cuidador';
 }
 
+export interface CreateRelationshipDTO {
+  caregiver_id: number;
+  elderly_id: number;
+  relationship_type?: string;
+  permissions?: Partial<Permissions>;
+}
+
 export class RelationshipService {
   static async getAll(): Promise<Relationship[]> {
     // Fetch all relationships by getting all patients and their caregivers
@@ -51,11 +58,7 @@ export class RelationshipService {
     return response.data;
   }
 
-  static async create(data: {
-    caregiver_id: number;
-    elderly_id: number;
-    relationship_type: string;
-  }): Promise<Relationship> {
+  static async createRelationship(data: CreateRelationshipDTO): Promise<Relationship> {
     const response = await apiClient.post('/relationships', data);
     return response.data;
   }
@@ -75,7 +78,7 @@ export class RelationshipService {
     return response.data;
   }
 
-  static async delete(relationshipId: number): Promise<void> {
+  static async deleteRelationship(relationshipId: number): Promise<void> {
     await apiClient.delete(`/relationships/${relationshipId}`);
   }
 

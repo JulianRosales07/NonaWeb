@@ -8,6 +8,7 @@ import { Users } from './presentation/pages/Users'
 import { Medications } from './presentation/pages/Medications'
 import { Relationships } from './presentation/pages/Relationships'
 import { Stats } from './presentation/pages/Stats'
+import { Settings } from './presentation/pages/Settings'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -21,6 +22,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="/medications" element={<Medications />} />
           <Route path="/relationships" element={<Relationships />} />
           <Route path="/stats" element={<Stats />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Dashboard />} />
         </Route>
       </Routes>

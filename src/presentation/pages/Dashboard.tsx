@@ -510,7 +510,7 @@ export function Dashboard() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {recentMeds.map((med) => (
-                  <tr key={med.id} className="hover:bg-slate-50/80 transition-colors">
+                  <tr key={med.id} className="hover:bg-slate-50/80 transition-colors group">
                     <td className="px-6 py-3.5">
                       <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
